@@ -882,15 +882,21 @@ Se o nome do método ASP for composto, como por exemplo `meuObjeto.getExpiration
 
 A exemplo das linguagens de programação, a classe Template suporta comentários no HTML. Comentários são úteis para várias coisas, entre elas, identificar o autor do HTML, versão, incluir licenças, etc.
 
+Diferentemente dos comentários HTML, que são exibidos no código fonte da página, os comentários da classe Template são extraídos do HTML final. Na verdade os comentários de Template são extraídos antes mesmo de qualquer processamento, e tudo que estiver entre os comentários será ignorado.
+
+Os comentários ficam entre as tags `<!---` e `--->`.
+Repare que usamos 3 tracinhos, ao invés de 2 (que identificam comentários HTML).
+A razão é simples: permitir diferenciarmos entre um e outro, e permitir que os editores continuem reconhecendo o conteúdo entre `<!---` e `--->` como comentários.
+
 Veja o exemplo abaixo:
 
 ```html
-    <!--
+    <!---
 	Listagem de produtos.
 
 	@author Plécyo
 	@version 1.0
-    -->
+    --->
 
     <p>Produtos cadastrados no sistema:</p>
 
