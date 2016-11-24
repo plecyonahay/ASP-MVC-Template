@@ -193,7 +193,7 @@ E o seguinte HTML, já fazendo uso dos modificadores:
 
 Explicando: a linha `{NOME|replace:"Fulano":"Plécyo"}` faz a mesma coisa que a função do ASP [`Replace`](http://www.w3schools.com/asp/func_replace.asp) (substitui um texto por outro).
 
-Já no segundo exemplo, usamos a função do ASP, [`FormatCurrency`](http://www.w3schools.com/asp/func_formatcurrency.asp). Neste caso, estamos usando ela para formatar como um valor em reais.
+Já no segundo exemplo, usamos a função do ASP, [`FormatCurrency`](http://www.w3schools.com/asp/func_formatcurrency.asp). Neste caso, estamos usando ela para formatar como moeda com duas casas decimais.
 
 ## Blocos
 
