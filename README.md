@@ -1,4 +1,5 @@
 # ASP-MVC-Template
+
 Tutorial de Templates em ASP
 ========
 
@@ -18,9 +19,7 @@ Então, vamos lá.
 
 ## Instalação e Uso
 
-1 - Descompacte o arquivo .zip
-
-2 - Incluir a classe Template da seguinte forma:
+Incluir a classe Template da seguinte forma:
 
 ``` asp
 <!--#include file="Template.class.asp" -->
@@ -100,7 +99,7 @@ Então, como ficaria o código ASP que atribui valor a ela? Vamos a ele:
     Set tpl = New Template
 
         tpl.addTemplate "hello.html"
-        tpl.setVariable "FULANO", "Plecyo"
+        tpl.setVariable "FULANO", "Plécyo"
         tpl.show()
 
     Set tpl = Nothing
@@ -113,7 +112,7 @@ Execute então novamente o script, e você verá que o código final gerado no n
     <html>
     <body>
 
-      Olá Plecyo, com templates ASP!
+      Olá Plécyo, com templates ASP!
 
     </body>
     </html>
@@ -141,7 +140,7 @@ Como é de se esperar, ele retorna true caso a variável exista. Caso não, reto
         tpl.addTemplate "hello.html"
         
         if tpl.exists("FULANO") then
-            tpl.setVariable "FULANO", "Plecyo"
+            tpl.setVariable "FULANO", "Plécyo"
         end if
         
         tpl.show()
@@ -187,12 +186,12 @@ E o seguinte HTML, já fazendo uso dos modificadores:
 		<meta charset="UTF-8">
 	</head>
 	<body>
-		<div>Nome: {NOME|replace:Fulano:Plecyo}</div>
+		<div>Nome: {NOME|replace:"Fulano":"Plécyo"}</div>
 		<div>Valor: {VALOR|FormatCurrency:2}</div>
 	</body>
 	</html>
 
-Explicando: a linha `{NOME|replace:Fulano:Plecyo}` faz a mesma coisa que a função do ASP [`Replace`](http://www.w3schools.com/asp/func_replace.asp) (substitui um texto por outro).
+Explicando: a linha `{NOME|replace:"Fulano":"Plécyo"}` faz a mesma coisa que a função do ASP [`Replace`](http://www.w3schools.com/asp/func_replace.asp) (substitui um texto por outro).
 
 Já no segundo exemplo, usamos a função do ASP, [`FormatCurrency`](http://www.w3schools.com/asp/func_formatcurrency.asp). Neste caso, estamos usando ela para formatar como um valor em reais.
 
@@ -662,7 +661,7 @@ No arquivo ASP então, usamos o método addFile(), onde informamos duas coisas: 
         ' Adicionando um novo arquivo a uma variável
         tpl.addFile "CONTEUDO", "miolo.html"
 		
-        tpl.setVariable "FULANO", "Plecyo"
+        tpl.setVariable "FULANO", "Plécyo"
         
         ' Produtos cadastrados
         produtos = Array( _
@@ -703,7 +702,7 @@ Até agora exibimos o conteúdo gerado pelo template na tela, através do métod
         ' Adicionando um novo arquivo a uma variável
         tpl.addFile "CONTEUDO", "miolo.html"
 		
-        tpl.setVariable "FULANO", "Plecyo"
+        tpl.setVariable "FULANO", "Plécyo"
         
         ' Produtos cadastrados
         produtos = Array( _
@@ -743,7 +742,6 @@ Até agora exibimos o conteúdo gerado pelo template na tela, através do métod
 %>
 ```
 
-PR
 ## Usando Objetos
 
 A classe Template suporta a atribuição de objetos para as variáveis de template.
@@ -797,7 +795,7 @@ Vamos então modificar o arquivo ASP para carregar um produto, e usar o suporte 
         ' Adicionando um novo arquivo a uma variável
         tpl.addFile "CONTEUDO", "miolo.html"
 		
-		    tpl.setVariable "FULANO", "Plecyo"
+		    tpl.setVariable "FULANO", "Plécyo"
         
         Set objProduct_1 = New Product
             objProduct_1.setId   = 0
@@ -848,7 +846,7 @@ Veja o exemplo abaixo:
     <!--
 	Listagem de produtos.
 
-	@author Plecyo
+	@author Plécyo
 	@version 1.0
     -->
 
