@@ -13,7 +13,7 @@ Então, vamos lá.
 
 ## Requisitos Necessários
 
-É preciso usar qualquer versão do ASP igual ou superior a 6.5.
+É preciso ter implantando um servidor ASP clássico (IIS - Internet Information Services) versão igual ou superior a 6.0.
 
 
 ## Instalação e Uso
