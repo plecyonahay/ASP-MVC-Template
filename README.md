@@ -626,26 +626,26 @@ Agora, vamos criar o arquivo que contém o "miolo" de nossa página HTML, o arqu
 
     <p>Produtos cadastrados no sistema:</p>
 
-    <!-- BEGIN BLOCK_PRODUTOS -->
+    <!---{BEGIN BLOCK_PRODUTOS}--->
     <table border=1>
 
 
     <tr><td>Nome</td><td>Quantidade</td></tr>
 
-    <!-- BEGIN BLOCK_DADOS -->
+    <!---{BEGIN BLOCK_DADOS}--->
     <tr>
 	<td> {NOME} </td>
 	<td> {QUANTIDADE} </td>
     </tr>
 
-    <!-- END BLOCK_DADOS -->
+    <!---{END BLOCK_DADOS}--->
 
     </table>
-    <!-- END BLOCK_PRODUTOS -->
+    <!---{END BLOCK_PRODUTOS}--->
 
     <div class=vazio>Nenhum registro encontrado.</div>
 
-    <!-- FINALLY BLOCK_PRODUTOS -->
+    <!---{FINALLY BLOCK_PRODUTOS}--->
 
 
 No arquivo ASP então, usamos o método addFile(), onde informamos duas coisas: em qual variável do template o conteúdo do novo arquivo será jogado, e qual o caminho desse arquivo. Depois disso, basta usar as variáveis e blocos normalmente, independente de qual arquivo HTML eles estejam:
