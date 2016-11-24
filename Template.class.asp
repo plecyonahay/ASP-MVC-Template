@@ -1,11 +1,11 @@
-﻿<%
+<%
 ' Template em ASP Classic
 '
 ' O Template permite manter o código HTML livres de códigos ASP.
 ' Desta forma, é possível manter a programação lógica (código ASP) longe da estrutura visual (HTML, CSS, etc).
 '
 ' @author  Plecyo Nahay (plecyonahay@gmail.com)
-' @version 1.0 
+' @version 1.0
 '
 Class Template
 
@@ -55,7 +55,7 @@ Class Template
 		Set p_finally      = CreateObject("Scripting.Dictionary")
 		
 		Set p_regex        = New RegExp
-			p_regex_search = "([A-Z0-9_])+"
+		    p_regex_search = "([A-Z0-9_])+"
 	End Sub
 	
 	
@@ -144,18 +144,18 @@ Class Template
 		
 		lines = Split(content, vbCrLf)
 		For each line in lines
-			If InStr(line, "<!---{") > 0 Then
-			
+			If InStr(line, "<!--") > 0 Then
+				
 				'BEGIN
 				with p_regex
 					.Global = False
 					.MultiLine = False
 					.IgnoreCase = False
-					.Pattern = "\<!---\{BEGIN\s+("&p_regex_search&")\}--->"
+					.Pattern = "\<!--\s+(BEGIN\s+("&p_regex_search&"))\s+\-->"
 				End with		
 				Set matches = p_regex.Execute(line)
 				If matches.Count > 0 Then
-					match_value = matches.Item(0).SubMatches.Item(0)
+					match_value = matches.Item(0).SubMatches.Item(1)
 					
 					If queued_blocks.Count = 0 Then
 						parent = varname
@@ -177,7 +177,7 @@ Class Template
 					.Global = False
 					.MultiLine = False
 					.IgnoreCase = False
-					.Pattern = "\<!---\{END\s+("&p_regex_search&")\}--->"
+					.Pattern = "\<!--\s+(END\s+("&p_regex_search&"))\s+\-->"
 				End with
 				Set matches = p_regex.Execute(line)
 				If matches.Count > 0 Then
@@ -297,7 +297,7 @@ Class Template
 		with p_regex
 			.Global = False
 			.IgnoreCase = False
-			.Pattern = "\<!---\{BEGIN\s+"&block&"\}--->"
+			.Pattern = "\<!--\s+(BEGIN\s+("&block&"))\s+\-->"
 		End with		
 		Set matches = p_regex.Execute(str)
 		If matches.Count > 0 Then
@@ -310,7 +310,7 @@ Class Template
 		with p_regex
 			.Global = False
 			.IgnoreCase = False
-			.Pattern = "\<!---\{END\s+"&block&"\}--->"
+			.Pattern = "\<!--\s+(END\s+("&block&"))\s+\-->"
 		End with		
 		Set matches = p_regex.Execute(str)
 		If matches.Count > 0 Then
@@ -323,7 +323,7 @@ Class Template
 		with p_regex
 			.Global = False
 			.IgnoreCase = False
-			.Pattern = "\<!---\{FINALLY\s+"&block&"\}--->"
+			.Pattern = "\<!--\s+(FINALLY\s+("&block&"))\s+\-->"
 		End with		
 		Set matches = p_regex.Execute(str)
 		If matches.Count > 0 Then
