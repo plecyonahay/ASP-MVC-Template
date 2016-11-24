@@ -892,10 +892,10 @@ Veja o exemplo abaixo:
 
 ```html
     <!---
-	Listagem de produtos.
-
-	@author Plécyo
-	@version 1.0
+        Listagem de produtos.
+	
+        @author Plécyo
+        @version 1.0
     --->
 
     <p>Produtos cadastrados no sistema:</p>
