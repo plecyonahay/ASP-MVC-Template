@@ -21,13 +21,12 @@ Então, vamos lá.
 
 Incluir a classe Template da seguinte forma:
 
-``` asp
+```asp
 <!--#include file="Template.class.asp" -->
 <%
-
     Dim tpl
     Set tpl = New Template
-
+    Set tpl = Nothing
 %>
 ```
 
@@ -36,34 +35,35 @@ Incluir a classe Template da seguinte forma:
 
 O funcionamento básico do mecanismo de templates é baseado na seguinte idéia: você tem um arquivo ASP (que usará a biblioteca), e este arquivo não conterá código HTML algum. O código HTML ficará separado, em um arquivo que conterá somente códigos HTML. Este arquivo HTML será lido pelo arquivo ASP.
 
+Para evitar problemas com codificação de caracteres, procure definir o charset (encoding) UTF-8 para todos os documentos que você irá importar para o seu projeto (.HTML, .ASP, ...).
+
 Dito isso, vamos ao primeiro exemplo, o já manjado Olá mundo. Vamos criar 2 arquivos: o ASP responsável por toda a lógica, e o arquivo HTML com nosso layout.
 
 Então, crie um arquivo HTML, chamado hello.html com o conteúdo abaixo:
 
-
-    <html>
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Olá Mundo</title>
+    </head>
     <body>
-
-      Olá Mundo, com templates ASP!
-
+        Olá Mundo, com templates ASP!
     </body>
-    </html>
+</html>
+```
 
 Agora, crie o arquivo ASP, hello.asp:
 
-``` asp
+```asp
 <!--#include file="Template.class.asp" -->
 <%
-
     Dim tpl
     Set tpl = New Template
-
         tpl.addTemplate "hello.html"
-
         tpl.show()
-
     Set tpl = Nothing
-    
 %>
 ```
 
@@ -76,14 +76,18 @@ Se algo deu errado, consulte a seção sobre as Mensagens de Erro.
 
 Vamos agora a um conceito importante: variáveis de template. Como você pode imaginar, vamos querer alterar várias partes do arquivo HTML. Como fazer isso? Simples: no lado do HTML, você cria as chamadas variáveis de template. Veja o exemplo abaixo:
 
-
-    <html>
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Olá Mundo</title>
+    </head>
     <body>
-
-      Olá {FULANO}, com templates ASP!
-
+        Olá {FULANO}, com templates ASP!
     </body>
-    </html>
+</html>
+```
 
 Repare na variável FULANO, entre chaves. Ela vai ter seu valor atribuído no código ASP.
 
@@ -91,31 +95,32 @@ Variáveis só podem contêr em seu nome: letras, números e underscore (_). O u
 
 Então, como ficaria o código ASP que atribui valor a ela? Vamos a ele:
 
-``` asp
+```asp
 <!--#include file="Template.class.asp" -->
 <%
-
     Dim tpl
     Set tpl = New Template
-
         tpl.addTemplate "hello.html"
         tpl.setVariable "FULANO", "Plécyo"
         tpl.show()
-
     Set tpl = Nothing
-
 %>
 ```
 
 Execute então novamente o script, e você verá que o código final gerado no navegador será:
 
-    <html>
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Olá Mundo</title>
+    </head>
     <body>
-
-      Olá Plécyo, com templates ASP!
-
+        Olá Plécyo, com templates ASP!
     </body>
-    </html>
+</html>
+```
 
 Variáveis de template que não tiverem um valor atribuído, serão limpas do código final gerado.
 
@@ -130,25 +135,22 @@ Caso você queira atribuir valor pra uma variável de template, mas não tem cer
 
 Como é de se esperar, ele retorna true caso a variável exista. Caso não, retorna false:
 
-``` asp
+```asp
 <!--#include file="Template.class.asp" -->
 <%
-
     Dim tpl
     Set tpl = New Template
-
         tpl.addTemplate "hello.html"
         
-        if tpl.exists("FULANO") then
+        If tpl.exists("FULANO") Then
             tpl.setVariable "FULANO", "Plécyo"
-        end if
-        
+        End If
+
         tpl.show()
-
     Set tpl = Nothing
-
 %>
 ```
+
 
 ## Variáveis com Modificadores
 
@@ -159,41 +161,39 @@ Como é de se esperar, ele retorna true caso a variável exista. Caso não, reto
 
 Vamos supor o seguinte arquivo ASP, que atribui as variáveis de template NOME e VALOR:
 
-``` asp
+```asp
 <!--#include file="Template.class.asp" -->
 <%
-
     Dim tpl
     Set tpl = New Template
-
         tpl.addTemplate "hello.html"
-        
         tpl.setVariable "NOME", "Fulano Ciclano da Silva"
         tpl.setVariable "VALOR", 100
-        
         tpl.show()
-
     Set tpl = Nothing
-
 %>
 ```
 
 E o seguinte HTML, já fazendo uso dos modificadores:
 
-	<html>
-	<head>
-		<title>Exemplo - Modificadores</title>
-		<meta charset="UTF-8">
-	</head>
-	<body>
-		<div>Nome: {NOME|replace:"Fulano":"Plécyo"}</div>
-		<div>Valor: {VALOR|FormatCurrency:2}</div>
-	</body>
-	</html>
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Olá Mundo - Modificadores</title>
+    </head>
+    <body>
+        <div>Nome: {NOME|replace:"Fulano":"Plécyo"}</div>
+        <div>Valor: {VALOR|FormatCurrency:2}</div>
+    </body>
+</html>
+```
 
 Explicando: a linha `{NOME|replace:"Fulano":"Plécyo"}` faz a mesma coisa que a função do ASP [`Replace`](http://www.w3schools.com/asp/func_replace.asp) (substitui um texto por outro).
 
 Já no segundo exemplo, usamos a função do ASP, [`FormatCurrency`](http://www.w3schools.com/asp/func_formatcurrency.asp). Neste caso, estamos usando ela para formatar como moeda com duas casas decimais.
+
 
 ## Blocos
 
@@ -203,22 +203,31 @@ Imagine que você gostaria de listar o total de produtos cadastrados em um banco
 
 Vamos utilizar então, dois blocos: um que mostra a quantidade total; e outro que avisa que não existem produtos cadastrados, caso realmente o banco esteja vazio. O código HTML para isso é:
 
-    <html>
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Olá Mundo - Blocos</title>
+    </head>
     <body>
+        <p>Quantidade de produtos cadastrados no sistema:</p>
 
-      <p>Quantidade de produtos cadastrados no sistema:</p>
+        <!-- BEGIN BLOCK_QUANTIDADE -->
+            <div class="destaque">
+                Existem {QUANTIDADE} produtos cadastrados.
+            </div>
+        <!-- END BLOCK_QUANTIDADE -->
 
-      <!---{BEGIN BLOCK_QUANTIDADE}--->
-      <div class="destaque">Existem {QUANTIDADE} produtos cadastrados.</div>
-      <!---{END BLOCK_QUANTIDADE}--->
-
-      <!---{BEGIN BLOCK_VAZIO}--->
-      <div class="vazio">Não existe nenhum produto cadastrado.</div>
-      <!---{END BLOCK_VAZIO}--->
+        <!-- BEGIN BLOCK_VAZIO -->
+            <div class="vazio">
+                Não existe nenhum produto cadastrado.
+            </div>
+        <!-- END BLOCK_VAZIO -->
 
     </body>
-
-    </html>
+</html>
+```
 
 Repare que o início e final do bloco são identificados por um comentário HTML, com a palavra BEGIN (para identificar início) ou END (para identificar fim) e o nome do bloco em seguida.
 
@@ -226,13 +235,11 @@ As palavras BEGIN e END sempre devem ser maiúsculas. O nome do bloco deve conte
 
 E então, no lado ASP, vamos checar se os produtos existem. Caso sim, mostraremos o bloco BLOCK_QUANTIDADE. Caso não, vamos exibir o bloco BLOCK_VAZIO.
 
-``` asp
+```asp
 <!--#include file="Template.class.asp" -->
 <%
-
     Dim tpl
     Set tpl = New Template
-
         tpl.addTemplate "hello.html"
         
         ' Vamos supor que esta quantidade veio do banco de dados
@@ -241,15 +248,13 @@ E então, no lado ASP, vamos checar se os produtos existem. Caso sim, mostraremo
         ' Se existem produtos cadastrados, vamos exibir a quantidade
         if quantidade > 0 then
             tpl.setVariable "QUANTIDADE", quantidade
-            tpl.block("BLOCK_QUANTIDADE")
+            tpl.block "BLOCK_QUANTIDADE"
         else ' Caso não exista nenhum produto, exibimos a mensagem de vazio
-            tpl.block("BLOCK_VAZIO")
+            tpl.block "BLOCK_VAZIO"
         end if
         
         tpl.show()
-
     Set tpl = Nothing
-
 %>
 ```
 
@@ -261,57 +266,61 @@ Repare que mesmo com o uso de blocos, podemos continuar editando o arquivo HTML 
 
 Agora vamos a outro exemplo usando blocos: imagine que você precisa mostrar os dados dos produtos que existem no seu cadastro. Vamos então, usando blocos, montar o HTML para isso:
 
-    <html>
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Olá Mundo - Blocos</title>
+    </head>
     <body>
-
-      <p>Produtos cadastrados no sistema:</p>
-
-      <table border=1>
-
-
-        <tr><td>Nome</td><td>Quantidade</td></tr>
-
-        <!---{BEGIN BLOCK_PRODUTO}--->
-        <tr>
-          <td> {NOME} </td>
-          <td> {QUANTIDADE} </td>
-        </tr>
-        <!---{END BLOCK_PRODUTO}--->
-
-      </table>
-
+        <p>Produtos cadastrados no sistema:</p>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Quantidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- BEGIN BLOCK_PRODUTO -->
+                    <tr>
+                        <td> {NOME} </td>
+                        <td> {QUANTIDADE} </td>
+                    </tr>
+                <!-- END BLOCK_PRODUTO -->
+            </tbody>
+        </table>
     </body>
-    </html>
+</html>
+```
 
 Repare que temos apenas uma linha de tabela HTML para os dados dos produtos, dentro de um bloco. Vamos então atribuir valor a estas variáveis, e ir duplicando o conteúdo do bloco conforme listamos os produtos:
 
-``` asp
+```asp
 <!--#include file="Template.class.asp" -->
 <%
-
     Dim tpl
     Set tpl = New Template
-
         tpl.addTemplate "hello.html"
-        
-				' Simulando produtos cadastrados no banco de dados
-				produtos = Array( _
-						Array("Sabão em Pó", 15), _
-						Array("Escova de Dente", 53), _
-						Array("Creme Dental", 37) _
-				)
-		    
+
+        ' Simulando produtos cadastrados no banco de dados
+        produtos = Array( _
+            Array("Sabão em Pó", 15), _
+            Array("Escova de Dente", 53), _
+            Array("Creme Dental", 37) _
+        )
+
         ' Listando os produtos
-				For Each p In produtos
-						tpl.setVariable "NOME", p(0)
-						tpl.setVariable "QUANTIDADE", p(1)
-						tpl.block("BLOCK_PRODUTO")
-				Next
-		
+        For Each p In produtos
+            tpl.setVariable "NOME", p(0)
+            tpl.setVariable "QUANTIDADE", p(1)
+
+            tpl.block "BLOCK_PRODUTO"
+        Next
+
         tpl.show()
-
     Set tpl = Nothing
-
 %>
 ```
 
@@ -319,13 +328,11 @@ O comportamento padrão do método block() é manter o conteúdo anterior do blo
 
 No exemplo acima, os dados dos produtos vieram do array "produtos". Caso estes dados estivessem armazenados em um banco de dados, então bastaríamos fazer como no exemplo abaixo:
 
-``` asp
+```asp
 <!--#include file="Template.class.asp" -->
 <%
-
     Dim tpl
     Set tpl = New Template
-
         tpl.addTemplate "hello.html"
         
         ' ... Conectar ao banco, selecionar database, etc
@@ -337,13 +344,12 @@ No exemplo acima, os dados dos produtos vieram do array "produtos". Caso estes d
         While Not result.EOF Then
             tpl.setVariable "NOME", result("nome")
             tpl.setVariable "QUANTIDADE", result("quantidade")
-            tpl.block("BLOCK_PRODUTO")
+
+            tpl.block "BLOCK_PRODUTO"
         Wend
 		
         tpl.show()
-
     Set tpl = Nothing
-
 %>
 ```
 
@@ -352,46 +358,53 @@ No exemplo acima, os dados dos produtos vieram do array "produtos". Caso estes d
 
 Vamos agora então juntar os 2 exemplos de uso de blocos que vimos: queremos mostrar os dados dos produtos em um bloco, mas caso não existam produtos cadastrados, exibiremos uma mensagem com um aviso. Vamos fazer isso agora usando blocos aninhados, ou seja, blocos dentro de outros blocos:
 
-    <html>
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Olá Mundo - Blocos</title>
+    </head>
     <body>
+        <p>Produtos cadastrados no sistema:</p>
 
-      <p>Produtos cadastrados no sistema:</p>
+        <!-- BEGIN BLOCK_PRODUTOS -->
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Quantidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- BEGIN BLOCK_DADOS -->
+                        <tr>
+                            <td> {NOME} </td>
+                            <td> {QUANTIDADE} </td>
+                        </tr>
+                    <!-- END BLOCK_DADOS -->
+                </tbody>
+            </table>
+        <!-- END BLOCK_PRODUTO -->
 
-
-      <!---{BEGIN BLOCK_PRODUTOS}--->
-      <table border=1>
-
-        <tr><td>Nome</td><td>Quantidade</td></tr>
-
-
-        <!---{BEGIN BLOCK_DADOS}--->
-        <tr>
-          <td> {NOME} </td>
-          <td> {QUANTIDADE} </td>
-        </tr>
-        <!---{END BLOCK_DADOS}--->
-
-      </table>
-      <!---{END BLOCK_PRODUTOS}--->
-
-      <!---{BEGIN BLOCK_VAZIO}--->
-      <div class=vazio>Nenhum registro encontrado.</div>
-      <!---{END BLOCK_VAZIO}--->
+        <!-- BEGIN BLOCK_VAZIO -->
+            <div class="vazio">
+                Nenhum registro encontrado.
+            </div>
+        <!-- END BLOCK_VAZIO -->
 
     </body>
-
-    </html>
+</html>
+```
 
 E então, caso existam produtos, nós exibimos o bloco PRODUTOS. Caso contrário, exibimos o bloco VAZIO.
 Um detalhe muito importante em relação a sua antecessora: se um bloco aninhado é exibido, todos os blocos pais serão automaticamente exibidos.
 
-``` asp
+```asp
 <!--#include file="Template.class.asp" -->
 <%
-
     Dim tpl
     Set tpl = New Template
-
         tpl.addTemplate "hello.html"
         
         ' Produtos cadastrados
@@ -405,18 +418,17 @@ Um detalhe muito importante em relação a sua antecessora: se um bloco aninhado
         For Each p In produtos
             tpl.setVariable "NOME", p(0)
             tpl.setVariable "QUANTIDADE", p(1)
-            tpl.block("BLOCK_DADOS")
+
+            tpl.block "BLOCK_DADOS"
         Next
 		
         ' Se não existem produtos, mostramos o bloco com o aviso de nenhum cadastrado
         If Not IsArray(produtos) Then
-            tpl.block("BLOCK_VAZIO")
+            tpl.block "BLOCK_VAZIO"
         End If
-		
+
         tpl.show()
-
     Set tpl = Nothing
-
 %>
 ```
 
@@ -433,45 +445,51 @@ Podemos fazer isso de forma mais automática: usandos os blocos FINALLY.
 
 Veja como ficaria o arquivo HTML neste caso:
 
-    <html>
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Olá Mundo - Blocos</title>
+    </head>
     <body>
+        <p>Produtos cadastrados no sistema:</p>
 
-      <p>Produtos cadastrados no sistema:</p>
+        <!-- BEGIN BLOCK_PRODUTOS -->
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Quantidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- BEGIN BLOCK_DADOS -->
+                        <tr>
+                            <td> {NOME} </td>
+                            <td> {QUANTIDADE} </td>
+                        </tr>
+                    <!-- END BLOCK_DADOS -->
+                </tbody>
+            </table>
+        <!-- END BLOCK_PRODUTO -->
 
-
-      <!---{BEGIN BLOCK_PRODUTOS}--->
-      <table border=1>
-
-        <tr><td>Nome</td><td>Quantidade</td></tr>
-
-
-        <!---{BEGIN BLOCK_DADOS}--->
-        <tr>
-          <td> {NOME} </td>
-          <td> {QUANTIDADE} </td>
-        </tr>
-        <!---{END BLOCK_DADOS}--->
-
-      </table>
-      <!---{END BLOCK_PRODUTOS}--->
-
-      <div class=vazio>Nenhum registro encontrado.</div>
-
-      <!---{FINALLY BLOCK_PRODUTOS}--->
+            <div class="vazio">
+                Nenhum registro encontrado.
+            </div>
+        <!-- FINALLY BLOCK_PRODUTO -->
 
     </body>
-
-    </html>
+</html>
+```
 
 E o arquivo ASP? Bem, ele vai ficar mais simples ainda:
 
-``` asp
+```asp
 <!--#include file="Template.class.asp" -->
 <%
-
     Dim tpl
     Set tpl = New Template
-
         tpl.addTemplate "hello.html"
         
         ' Produtos cadastrados
@@ -486,14 +504,12 @@ E o arquivo ASP? Bem, ele vai ficar mais simples ainda:
             For Each p In produtos
                 tpl.setVariable "NOME", p(0)
                 tpl.setVariable "QUANTIDADE", p(1)
-                tpl.block("BLOCK_DADOS")
+                tpl.block "BLOCK_DADOS"
             Next
         End If
-		
+
         tpl.show()
-
     Set tpl = Nothing
-
 %>
 ```
 
@@ -510,29 +526,32 @@ Uma das dúvidas mais comuns é: como usar a classe Template com o elemento Sele
 
 Vamos então montar nossa página HTML com o elemento Select e os devidos Options, representando cidades de uma lista:
 
-    <html>
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Olá Mundo - Blocos</title>
+    </head>
     <body>
-
-	<select name="cidades">
-
-		<!---{BEGIN BLOCK_OPTION}--->
-		<option value="{VALUE}" {SELECTED}>{TEXT}</option>
-		<!---{END BLOCK_OPTION}--->
-
-	</select>
-
+        <select name="cidades">
+            <!-- BEGIN BLOCK_OPTION -->
+                <option value="{VALUE}" {SELECTED}>
+                    {TEXT}
+                </option>
+            <!-- END BLOCK_OPTION -->
+        </select>
     </body>
-    </html>
+</html>
+```
 
 Agora vamos ao respectivo arquivo ASP:
 
 ``` asp
 <!--#include file="Template.class.asp" -->
 <%
-
     Dim tpl
     Set tpl = New Template
-
         tpl.addTemplate "hello.html"
         
         ' Array de cidades
@@ -553,50 +572,54 @@ Agora vamos ao respectivo arquivo ASP:
             If atual = c(0) Then
                 tpl.setVariable "SELECTED", "selected"
             Else
-                tpl.clear("SELECTED")
+                tpl.clear "SELECTED"
             End If
 			
-            tpl.block("BLOCK_OPTION")
+            tpl.block "BLOCK_OPTION"
         Next
 		
         tpl.show()
-
     Set tpl = Nothing
-
 %>
 ```
 
 Como resultado, o navegador exibirá o seguinte código:
 
-    <html>
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Olá Mundo - Blocos</title>
+    </head>
     <body>
-
-	<select name="cidades">
-
-		<option value="0" >Cidade 0</option>
-		<option value="1" selected>Cidade 1</option>
-		<option value="2" >Cidade 2</option>
-
-	</select>
-
+        <select name="cidades">
+            <option value="0" >Cidade 0</option>
+            <option value="1" selected>Cidade 1</option>
+            <option value="2" >Cidade 2</option>
+        </select>
     </body>
-    </html>
+</html>
+```
 
 Reparou que no arquivo ASP chamamos o método clear? Se não chamarmos este método (que limpa o valor de uma variável), todas as opções (Options) ficariam com a propriedade "selected" (obviamente, efeito não desejado):
 
-    <html>
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Olá Mundo - Blocos</title>
+    </head>
     <body>
-
-	<select name="cidades">
-
-		<option value="0" selected>Cidade 0</option>
-		<option value="1" selected>Cidade 1</option>
-		<option value="2" selected>Cidade 2</option>
-
-	</select>
-
+        <select name="cidades">
+            <option value="0" selected>Cidade 0</option>
+            <option value="1" selected>Cidade 1</option>
+            <option value="2" selected>Cidade 2</option>
+        </select>
     </body>
-    </html>
+</html>
+```
 
 
 ## Usando vários arquivos HTML
@@ -605,60 +628,63 @@ Um uso bastante comum de templates é usarmos um arquivo HTML que contenha a est
 
 Como fazer isso com templates? Em primeiro lugar, vamos criar nosso arquivo "base" HTML, o arquivo base.html:
 
-    <html>
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
     <head>
-    <title>Título da Página</title>
+        <meta charset="utf-8">
+        <title>Olá Mundo</title>
     </head>
     <body>
-
-	<div>{FULANO}, seja bem vindo!</div>
-
-	<div>{CONTEUDO}</div>
-
-	<div>Deseja maiores informações? Clique <a href="info.asp">aqui</a> para saber</div>
-
+        <div>{FULANO}, seja bem vindo!</div>
+	
+        <div>{CONTEUDO}</div>
+	
+        <div>Deseja maiores informações? Clique <a href="#">aqui</a> para saber</div>
     </body>
-    </html>
+</html>
+```
 
 Agora, vamos criar o arquivo que contém o "miolo" de nossa página HTML, o arquivo miolo.html:
 
-
+```html
     <p>Produtos cadastrados no sistema:</p>
 
-    <!---{BEGIN BLOCK_PRODUTOS}--->
-    <table border=1>
+    <!-- BEGIN BLOCK_PRODUTOS -->
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Quantidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- BEGIN BLOCK_DADOS -->
+                    <tr>
+                        <td> {NOME} </td>
+                        <td> {QUANTIDADE} </td>
+                    </tr>
+                <!-- END BLOCK_DADOS -->
+            </tbody>
+        </table>
+    <!-- END BLOCK_PRODUTO -->
 
-
-    <tr><td>Nome</td><td>Quantidade</td></tr>
-
-    <!---{BEGIN BLOCK_DADOS}--->
-    <tr>
-	<td> {NOME} </td>
-	<td> {QUANTIDADE} </td>
-    </tr>
-
-    <!---{END BLOCK_DADOS}--->
-
-    </table>
-    <!---{END BLOCK_PRODUTOS}--->
-
-    <div class=vazio>Nenhum registro encontrado.</div>
-
-    <!---{FINALLY BLOCK_PRODUTOS}--->
-
+        <div class="vazio">
+            Nenhum registro encontrado.
+        </div>
+    <!-- FINALLY BLOCK_PRODUTO -->
+```
 
 No arquivo ASP então, usamos o método addFile(), onde informamos duas coisas: em qual variável do template o conteúdo do novo arquivo será jogado, e qual o caminho desse arquivo. Depois disso, basta usar as variáveis e blocos normalmente, independente de qual arquivo HTML eles estejam:
 
-``` asp
+```asp
 <!--#include file="Template.class.asp" -->
 <%
-
     Dim tpl
     Set tpl = New Template
-
         tpl.addTemplate "base.html"
         
-        ' Adicionando um novo arquivo a uma variável
+        ' Adicionando mais um arquivo HTML
         tpl.addFile "CONTEUDO", "miolo.html"
 		
         tpl.setVariable "FULANO", "Plécyo"
@@ -675,13 +701,11 @@ No arquivo ASP então, usamos o método addFile(), onde informamos duas coisas: 
             tpl.setVariable "NOME", p(0)
             tpl.setVariable "QUANTIDADE", p(1)
 
-            tpl.block("BLOCK_DADOS")
+            tpl.block "BLOCK_DADOS"
         Next
 		
         tpl.show()
-
     Set tpl = Nothing
-
 %>
 ```
 
@@ -690,16 +714,14 @@ No arquivo ASP então, usamos o método addFile(), onde informamos duas coisas: 
 
 Até agora exibimos o conteúdo gerado pelo template na tela, através do método show(). Mas, e quisermos fazer outro uso para esse conteúdo, como salvá-lo em arquivo ou outra coisa do tipo? Basta usarmos o método parse(), que gera o conteúdo final e o retorna:
 
-``` asp
+```asp
 <!--#include file="Template.class.asp" -->
 <%
-
     Dim tpl
     Set tpl = New Template
-
         tpl.addTemplate "base.html"
         
-        ' Adicionando um novo arquivo a uma variável
+        ' Adicionando mais um arquivo HTML
         tpl.addFile "CONTEUDO", "miolo.html"
 		
         tpl.setVariable "FULANO", "Plécyo"
@@ -716,31 +738,31 @@ Até agora exibimos o conteúdo gerado pelo template na tela, através do métod
             tpl.setVariable "NOME", p(0)
             tpl.setVariable "QUANTIDADE", p(1)
 
-            tpl.block("BLOCK_DADOS")
+            tpl.block "BLOCK_DADOS"
         Next
 
-	  ' Pega o conteúdo final do template
-    conteudo = tpl.parse()
+    ' Pega o conteúdo final do template
+    html = tpl.parse()
+    
+    Set tpl = Nothing
 
     ' Cria um objeto manipulação de arquivos
     Dim fso
     Set fso = CreateObject("Scripting.FileSystemObject")
 
     ' Seleciona a pasta TEMP do Windows
-	  Dim temp_folder
+    Dim temp_folder
     Set temp_folder = fso.GetSpecialFolder(2)
 
-    ' Salva em um arquivo
+    ' Salva o arquivo no diretório
     Dim temp_file
     Set temp_file = temp_folder.CreateTextFile(fso.GetTempName)
-        temp_file.WriteLine(conteudo)
+        temp_file.WriteLine(html)
         temp_file.Close
     Set temp_file = Nothing
-
-    Set tpl = Nothing
-
 %>
 ```
+
 
 ## Usando Objetos
 
@@ -752,50 +774,46 @@ Para que os exemplos fiquem mais claros, vamos trabalhar com uma suposta página
 
 Primeiro, vamos a um exemplo de classe Produtos:
 
-``` asp
+```asp
 <%
-
 Class Product
 	
-	Private var_id
-	Private var_name
+    Private var_id
+    Private var_name
 	
-  Public Property Get getId()
-		getId = var_id
-	End Property
-	
-  Public Property Let setId(p_id)
-		var_id = p_id
-	End Property
-	
-  Public Property Get getName()
-		getName = var_name
-	End Property
-	
-  Public Property Let setName(p_name)
-		var_name = p_name
-	End Property
+    Public Property Get getId()
+        getId = var_id
+    End Property
+
+    Public Property Let setId(p_id)
+        var_id = p_id
+    End Property
+
+    Public Property Get getName()
+        getName = var_name
+    End Property
+
+    Public Property Let setName(p_name)
+        var_name = p_name
+    End Property
 
 End Class
-
 %>
 ```
 
 Vamos então modificar o arquivo ASP para carregar um produto, e usar o suporte a objetos de Template:
 
-``` asp
+```asp
 <!--#include file="Template.class.asp" -->
 <%
-
     Dim tpl
     Set tpl = New Template
-
         tpl.addTemplate "base.html"
         
-        ' Adicionando um novo arquivo a uma variável
+        ' Adicionando mais um arquivo HTML
         tpl.addFile "CONTEUDO", "miolo.html"
-		
-		    tpl.setVariable "FULANO", "Plécyo"
+
+        tpl.setVariable "FULANO", "Plécyo"
         
         Set objProduct_1 = New Product
             objProduct_1.setId   = 0
@@ -816,20 +834,43 @@ Vamos então modificar o arquivo ASP para carregar um produto, e usar o suporte 
         For Each obj In produtos
             tpl.setVariable "PRODUTO", obj
 
-            tpl.block("BLOCK_DADOS")
+            tpl.block "BLOCK_DADOS"
         Next
 		
-	      tpl.show()
-
+        tpl.show()
     Set tpl = Nothing
-
 %>
 ```
 
 O arquivo HTML também deve ser modificado pra exibir as propriedades de Produto:
 
-    Id: {PRODUTO->ID} <br/>
-    Nome: {PRODUTO->NAME} <br/>
+```html
+    <p>Produtos cadastrados no sistema:</p>
+
+    <!-- BEGIN BLOCK_PRODUTOS -->
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- BEGIN BLOCK_DADOS -->
+                    <tr>
+                        <td> {PRODUTO->ID} </td>
+                        <td> {PRODUTO->NAME} </td>
+                    </tr>
+                <!-- END BLOCK_DADOS -->
+            </tbody>
+        </table>
+    <!-- END BLOCK_PRODUTO -->
+
+        <div class="vazio">
+            Nenhum registro encontrado.
+        </div>
+    <!-- FINALLY BLOCK_PRODUTO -->
+```
 
 A instrução PRODUTO->NAME chamará o método Produto.getName(), caso ele exista. Se não existir esse método na classe, um erro será disparado.
 
@@ -843,6 +884,7 @@ A exemplo das linguagens de programação, a classe Template suporta comentário
 
 Veja o exemplo abaixo:
 
+```html
     <!--
 	Listagem de produtos.
 
@@ -852,26 +894,30 @@ Veja o exemplo abaixo:
 
     <p>Produtos cadastrados no sistema:</p>
 
-    <!---{BEGIN BLOCK_PRODUTOS}--->
-    <table border=1>
+    <!-- BEGIN BLOCK_PRODUTOS -->
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- BEGIN BLOCK_DADOS -->
+                    <tr>
+                        <td> {PRODUTO->ID} </td>
+                        <td> {PRODUTO->NAME} </td>
+                    </tr>
+                <!-- END BLOCK_DADOS -->
+            </tbody>
+        </table>
+    <!-- END BLOCK_PRODUTO -->
 
-
-	<tr><td>Nome</td><td>Quantidade</td></tr>
-
-	<!---{BEGIN BLOCK_DADOS}--->
-		<tr>
-			<td> {NOME} </td>
-			<td> {QUANTIDADE} </td>
-		</tr>
-
-	<!---{END BLOCK_DADOS}--->
-
-    </table>
-    <!---{END BLOCK_PRODUTOS}--->
-
-    <div class=vazio>Nenhum registro encontrado.</div>
-
-    <!---{FINALLY BLOCK_PRODUTOS}--->
+        <div class="vazio">
+            Nenhum registro encontrado.
+        </div>
+    <!-- FINALLY BLOCK_PRODUTO -->
+```
 
 
 ## Criando XML, CSV e outros
@@ -887,27 +933,38 @@ Vamos supor que por algum motivo você precise manter uma variável de template 
 
 Para isso, vamos supor que você tenha o HTML abaixo:
 
-    <html>
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Olá Mundo</title>
+    </head>
     <body>
-
-	{CONTEUDO}
-
+        {CONTEUDO}
     </body>
-    </html>
+</html>
+```
 
 E você precisa que `{CONTEUDO}` não seja substituído (ou removido), mas que permaneça no HTML final.
 
 Para isso, faça o *escape* incluindo `{_}` dentro da variável:
 
-    <html>
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Olá Mundo</title>
+    </head>
     <body>
-
-	{{_}CONTEUDO}
-
+        {{_}CONTEUDO}
     </body>
-    </html>
+</html>
+```
 
 E pronto: no HTML final `{CONTEUDO}` ainda estará presente.
+
 
 ## Conclusão
 
