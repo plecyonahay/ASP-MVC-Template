@@ -890,14 +890,15 @@ A razão é simples: permitir diferenciarmos entre um e outro, e permitir que os
 
 Veja o exemplo abaixo:
 
-```html
+```
     <!---
         Listagem de produtos.
 	
         @author Plécyo
         @version 1.0
     --->
-
+```
+```html
     <p>Produtos cadastrados no sistema:</p>
 
     <!-- BEGIN BLOCK_PRODUTOS -->
