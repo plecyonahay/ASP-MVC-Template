@@ -1,11 +1,14 @@
 <%
 ' Template em ASP Classic
 '
+' Licensed under MIT (https://github.com/plecyonahay/ASP-MVC-Template/blob/master/LICENSE)
+'
 ' O Template permite manter o código HTML livres de códigos ASP.
 ' Desta forma, é possível manter a programação lógica (código ASP) longe da estrutura visual (HTML, CSS, etc).
 '
 ' @author  Plecyo Nahay (plecyonahay@gmail.com)
-' @version 1.0
+' @version 1.1
+' @project https://github.com/plecyonahay/ASP-MVC-Template
 '
 Class Template
 
@@ -55,7 +58,7 @@ Class Template
 		Set p_finally      = CreateObject("Scripting.Dictionary")
 		
 		Set p_regex        = New RegExp
-		    p_regex_search = "([A-Z0-9_])+"
+			p_regex_search = "([A-Z0-9_])+"
 	End Sub
 	
 	
@@ -85,12 +88,32 @@ Class Template
 	End Function
 	
 	
+	' retorna o valor da variável/objeto dentro da coleção
+	Public Function getVariable(varname)
+		If p_values.Exists("{"&varname&"}") Then
+			getVariable = p_values.Item("{"&varname&"}")
+		Else
+			Call setError("getVariable", "Variável '"&varname&"' não existe")
+		End If
+	End Function
+	
+	
 	' verifica se existe uma variável de template
 	Public Function exists(varname)
 		If p_vars.Exists("{"&varname&"}") Then
 			exists = True
 		Else
 			exists = False
+		End If
+	End Function
+	
+	
+	' verifica se existe um bloco
+	Public Function existsBlock(blockname)
+		If p_blocks.Exists(blockname) Then
+			existsBlock = True
+		Else
+			existsBlock = False
 		End If
 	End Function
 	
@@ -169,7 +192,11 @@ Class Template
 						blocks.Item(parent) = blocks.Item(parent)&","&match_value
 					End If
 					
-					queued_blocks.Add match_value, match_value
+					If queued_blocks.Exists(match_value) Then
+						Call setError("identify", "Bloco '"&match_value&"' está duplicado")
+					Else
+						queued_blocks.Add match_value, match_value
+					End If
 				End If
 				
 				'END
@@ -402,6 +429,7 @@ Class Template
 			function_name = temp(0)
 			temp(0) = function_value
 			function_param = Join(temp, ",")
+			function_param = Replace(function_param, "'", """")
 			value = function_name&"("&function_param&")"
 			function_value = value
 		Next
