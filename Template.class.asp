@@ -7,7 +7,7 @@
 ' Desta forma, é possível manter a programação lógica (código ASP) longe da estrutura visual (HTML, CSS, etc).
 '
 ' @author  Plecyo Nahay (plecyonahay@gmail.com)
-' @version 1.1
+' @version 1.2
 ' @project https://github.com/plecyonahay/ASP-MVC-Template
 '
 Class Template
@@ -39,6 +39,9 @@ Class Template
 	' coleção de blocos utilizando finally 
 	Private p_finally
 
+	' definição do modo de comparação das chaves das coleções
+	Private p_dictionary_compare_mode
+
 	' Expressão regular para localizar nomes de variáveis e blocos
 	' Somente caracteres alfanuméricos e underline são permitidos
 	Private	p_regex
@@ -47,15 +50,37 @@ Class Template
 	
 	' construtor da classe 
 	Private Sub Class_Initialize
-		Set p_vars         = CreateObject("Scripting.Dictionary")
-		Set p_values       = CreateObject("Scripting.Dictionary")
-		Set p_properties   = CreateObject("Scripting.Dictionary")
-		Set p_instances    = CreateObject("Scripting.Dictionary")
-		Set p_modifiers    = CreateObject("Scripting.Dictionary")
-		Set p_blocks       = CreateObject("Scripting.Dictionary")
-		Set p_parents      = CreateObject("Scripting.Dictionary")
-		Set p_parsed       = CreateObject("Scripting.Dictionary")
-		Set p_finally      = CreateObject("Scripting.Dictionary")
+		'0 -> Binary Comparison
+		'1 -> Text Comparison
+		'2 -> Compare information inside database
+		p_dictionary_compare_mode = 1
+		
+		Set p_vars = CreateObject("Scripting.Dictionary")
+			p_vars.CompareMode = p_dictionary_compare_mode
+			
+		Set p_values = CreateObject("Scripting.Dictionary")
+			p_values.CompareMode = p_dictionary_compare_mode
+			
+		Set p_properties = CreateObject("Scripting.Dictionary")
+			p_properties.CompareMode = p_dictionary_compare_mode
+			
+		Set p_instances = CreateObject("Scripting.Dictionary")
+			p_instances.CompareMode = p_dictionary_compare_mode
+		
+		Set p_modifiers = CreateObject("Scripting.Dictionary")
+			p_modifiers.CompareMode = p_dictionary_compare_mode
+			
+		Set p_blocks = CreateObject("Scripting.Dictionary")
+			p_blocks.CompareMode = p_dictionary_compare_mode
+			
+		Set p_parents = CreateObject("Scripting.Dictionary")
+			p_parents.CompareMode = p_dictionary_compare_mode
+			
+		Set p_parsed = CreateObject("Scripting.Dictionary")
+			p_parsed.CompareMode = p_dictionary_compare_mode
+		
+		Set p_finally = CreateObject("Scripting.Dictionary")
+			p_finally.CompareMode = p_dictionary_compare_mode
 		
 		Set p_regex        = New RegExp
 			p_regex_search = "([A-Z0-9_])+"
