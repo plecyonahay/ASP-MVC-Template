@@ -7,7 +7,7 @@
 ' Desta forma, é possível manter a programação lógica (código ASP) longe da estrutura visual (HTML, CSS, etc).
 '
 ' @author  Plecyo Nahay (plecyonahay@gmail.com)
-' @version 1.2
+' @version 1.3
 ' @project https://github.com/plecyonahay/ASP-MVC-Template
 '
 Class Template
@@ -105,7 +105,7 @@ Class Template
 	
 	' insere o valor da variável/objeto dentro da coleção
 	Public Function setVariable(varname, value)
-		If NOT p_vars.Exists("{"&varname&"}") Then
+		If Not p_vars.Exists("{"&varname&"}") Then
 			Call setError("setVariable", "Variável '"&varname&"' não existe")
 		End If
 		
@@ -145,73 +145,75 @@ Class Template
 	
 	' carrega um arquivo identificado pelo "filename"
 	Private Function loadFile(varname, filename)
-		Dim objFSO, FilePath, objTextFile, contentFile
-		
 		If filename = "" Then
 			Call setError("loadFile", "Informe o nome do arquivo para a variável '"&varname&"'")
-		Else
-			FilePath = Server.MapPath(filename)
 		End If
+
+		Dim filepath : filepath = Server.MapPath(filename)
 		
-		Set objFSO = CreateObject("Scripting.FileSystemObject")
-		If  objFSO.FileExists(FilePath) Then
-			
-			Set objTextFile = CreateObject("ADODB.Stream")
+		Dim objFSO : Set objFSO = CreateObject("Scripting.FileSystemObject")
+		If  objFSO.FileExists(filepath) Then
+			Dim objTextFile : Set objTextFile = CreateObject("ADODB.Stream")
 				objTextFile.CharSet = "utf-8"
 				objTextFile.Open
-				objTextFile.LoadFromFile(FilePath)
-				contentFile = objTextFile.ReadText()
-			Set objTextFile = nothing
+				objTextFile.LoadFromFile(filepath)
 			
-			If contentFile = "" Then
-				Call setError("loadFile", "Arquivo '"&filename&"' está vazio")
+			Dim contentFile : contentFile = objTextFile.ReadText()
+
+			Set objTextFile = Nothing
+			
+			If (contentFile&"") = "" Then
+				Call setError("loadFile", "Arquivo '"&filepath&"' está vazio")
 			End If
 			
 			Call setValue(varname, contentFile)
 			
-			Dim blocks_identified
-			Set blocks_identified = identify(contentFile, varname)
+			Dim blocks_identified : Set blocks_identified = identify(contentFile, varname)
 			
 			Call createBlocks(blocks_identified)
 		Else
-			Call setError("loadFile", "Arquivo '"&filename&"' não existe no caminho '"&FilePath&"'")
+			Call setError("loadFile", "Arquivo não existe no caminho '"&filepath&"'")
 		End If
 		
-		Set objFSO = nothing
+		Set objFSO = Nothing
 	End Function
 	
 	
 	' identifica todos os blocos e variáveis automaticamente
 	Private Function identify(content, varname)
-		Dim blocks, queued_blocks, lines, line, matches, match_value, parent, last_block
-		
-		Set blocks        = CreateObject("Scripting.Dictionary")
-		Set queued_blocks = CreateObject("Scripting.Dictionary")
+		Dim blocks : Set blocks = CreateObject("Scripting.Dictionary")
+			blocks.CompareMode = p_dictionary_compare_mode
+
+		Dim queued_blocks : Set queued_blocks = CreateObject("Scripting.Dictionary")
+			queued_blocks.CompareMode = p_dictionary_compare_mode
 	
 		Call identifyVars(content)
 		
-		lines = Split(content, vbCrLf)
-		For each line in lines
+		Dim line
+		Dim lines : lines = Split(content, vbCrLf)
+		For Each line In lines
 			If InStr(line, "<!--") > 0 Then
 				
-				'BEGIN
-				with p_regex
+				'BEGIN Block
+				With p_regex
 					.Global = False
 					.MultiLine = False
 					.IgnoreCase = False
 					.Pattern = "\<!--\s+(BEGIN\s+("&p_regex_search&"))\s+\-->"
-				End with		
-				Set matches = p_regex.Execute(line)
-				If matches.Count > 0 Then
-					match_value = matches.Item(0).SubMatches.Item(1)
+				End With
+				Dim matches_begin : Set matches_begin = p_regex.Execute(line)
+				If matches_begin.Count > 0 Then
+					Dim match_value : match_value = matches_begin.Item(0).SubMatches.Item(1)
 					
+					Dim parent
+
 					If queued_blocks.Count = 0 Then
 						parent = varname
 					Else
 						parent = queued_blocks.Keys()(queued_blocks.Count - 1)
 					End If
 
-					If NOT blocks.Exists(parent) Then
+					If Not blocks.Exists(parent) Then
 						blocks.Add parent, match_value
 					Else
 						blocks.Item(parent) = blocks.Item(parent)&","&match_value
@@ -223,23 +225,26 @@ Class Template
 						queued_blocks.Add match_value, match_value
 					End If
 				End If
+				Set matches_begin = Nothing
 				
-				'END
-				with p_regex
+
+				'END Block
+				With p_regex
 					.Global = False
 					.MultiLine = False
 					.IgnoreCase = False
 					.Pattern = "\<!--\s+(END\s+("&p_regex_search&"))\s+\-->"
-				End with
-				Set matches = p_regex.Execute(line)
-				If matches.Count > 0 Then
+				End With
+				Dim matches_end : Set matches_end = p_regex.Execute(line)
+				If matches_end.Count > 0 Then
 					If queued_blocks.Count > 0 Then
-						last_block = queued_blocks.Keys()(queued_blocks.Count - 1)
+						Dim last_block : last_block = queued_blocks.Keys()(queued_blocks.Count - 1)
 						If queued_blocks.Exists(last_block) Then
 							queued_blocks.Remove(last_block)
 						End If
 					End If
 				End If
+				Set matches_end = Nothing
 				
 			End If
 		Next
@@ -250,33 +255,25 @@ Class Template
 	
 	' identifica todas as variáveis definidas no documento
 	Private Function identifyVars(content)
-		Dim matches, matchVar
-		
-		with p_regex
+		With p_regex
 			.Global = True
 			.MultiLine = True
 			.IgnoreCase = False
-			 .Pattern = "\{("&p_regex_search&")((\-\>("&p_regex_search&"))*)?((\|.*?)*)?\}"
-		End with
-		Set matches = p_regex.Execute(content)
-		
-		For each objMatch in matches
+			.Pattern = "\{("&p_regex_search&")((\-\>("&p_regex_search&"))*)?((\|.*?)*)?\}"
+		End With
+		Dim matches : Set matches = p_regex.Execute(content)
+
+		Dim objMatch
+		For Each objMatch In matches
 			If objMatch.SubMatches.Count > 0 Then
-				matchVar        = Trim(objMatch.SubMatches(0))
-				matchProperties = ""
-				matchModifiers  = ""
-				
+				Dim matchVar : matchVar = Trim(objMatch.SubMatches(0))
+
+				' Variáveis como Objetos: {OBJ->ATTRIBUTE}
+				Dim matchProperties : matchProperties = ""
 				If objMatch.SubMatches.Count > 2 Then
 					matchProperties = Trim(objMatch.SubMatches(2))
-				End If
-				
-				If objMatch.SubMatches.Count > 6 Then
-					matchModifiers = Trim(objMatch.SubMatches(6))
-				End If
-				
-				' Objetos
-				If matchProperties <> "" Then
-					If NOT p_properties.Exists(matchVar) Then
+
+					If Not p_properties.Exists(matchVar) Then
 						p_properties.Add matchVar, matchProperties
 					Else
 						If InStr(p_properties.Item(matchVar), matchProperties) = 0 Then
@@ -285,9 +282,13 @@ Class Template
 					End If
 				End If
 				
-				' Modificadores
-				If matchModifiers <> "" Then
-					If NOT p_modifiers.Exists(matchVar) Then
+				
+				' Variáveis com Modificadores: {OBJ->ATTRIBUTE|lCase} ou {ATTRIBUTE|lCase}
+				Dim matchModifiers : matchModifiers = ""
+				If objMatch.SubMatches.Count > 6 Then
+					matchModifiers = Trim(objMatch.SubMatches(6))
+
+					If Not p_modifiers.Exists(matchVar) Then
 						p_modifiers.Add matchVar&matchProperties, matchVar&matchProperties&matchModifiers
 					Else
 						If InStr(p_modifiers.Item(matchVar&matchProperties), matchModifiers) = 0 Then 
@@ -296,31 +297,33 @@ Class Template
 					End If
 				End If
 			
-				' Variáveis comuns
-				If NOT p_vars.Exists("{"&matchVar&"}") Then
+				' Variáveis comuns: {ATTRIBUTE}
+				If Not p_vars.Exists("{"&matchVar&"}") Then
 					p_vars.Add "{"&matchVar&"}", "{"&matchVar&"}"
 				End If
 			End If
 		Next
+		set objMatch = Nothing
+		Set matches = Nothing
 	End Function
 	
 	
 	' Cria todos os blocos identificados por identifyBlocks()
 	Private Function createBlocks(blocks)
-		Dim i, j, parent, block_, arr_block, child
-		
+		Dim i
 		For i = 0 to blocks.Count - 1
-			parent = blocks.Keys()(i)
-			block_ = blocks.Items()(i)
+			Dim parent : parent = blocks.Keys()(i)
+			Dim block_ : block_ = blocks.Items()(i)
 			
-			If NOT p_parents.Exists(parent) Then
+			If Not p_parents.Exists(parent) Then
 				p_parents.Add parent, block_
 			End If
 			
-			arr_block = Split(block_, ",")
+			Dim arr_block : arr_block = Split(block_, ",")
 			
+			Dim j
 			For j = 0 to Ubound(arr_block)
-				child = arr_block(j)
+				Dim child : child = arr_block(j)
 				
 				If p_blocks.Exists(child) Then
 					Call setError("createBlocks", "Bloco '"&child&"' está duplicado")
@@ -338,78 +341,88 @@ Class Template
 	' <!---{BEGIN _varname_}---> content <!---{END _varname_}--->
 	' Esse método remove o bloco "pai" e o substitui por uma referência variável denominada "block"
 	Private Function setBlock(parent, block)
-		Dim str, name, block_begin, block_end, block_finally, block_content, v_begin, v_end, v_finally, block_content_finally, block_replace
-	
-		str  = getVar(parent)
-		name = block&"_value"
+		Dim str : str = getVar(parent)
+		Dim name : name = block&"_value"
 		
 		Call setValue(name, "")
 
-		'BEGIN
-		with p_regex
+
+		'BEGIN Block
+		With p_regex
 			.Global = False
 			.IgnoreCase = False
 			.Pattern = "\<!--\s+(BEGIN\s+("&block&"))\s+\-->"
-		End with		
-		Set matches = p_regex.Execute(str)
-		If matches.Count > 0 Then
-			block_begin = matches.Item(0)
+		End With
+
+		Dim matches_begin : Set matches_begin = p_regex.Execute(str)
+		Dim block_begin
+		If matches_begin.Count > 0 Then
+			block_begin = matches_begin.Item(0)
 		Else
 			Call setError("setBlock", "Prefixo 'BEGIN' não encontrado no bloco '"&block&"'")
 		End If
+		Set matches_begin = Nothing
 		
-		'END
-		with p_regex
+
+		'END Block
+		With p_regex
 			.Global = False
 			.IgnoreCase = False
 			.Pattern = "\<!--\s+(END\s+("&block&"))\s+\-->"
-		End with		
-		Set matches = p_regex.Execute(str)
-		If matches.Count > 0 Then
-			block_end = matches.Item(0)
+		End With		
+
+		Dim matches_end : Set matches_end = p_regex.Execute(str)
+		Dim block_end
+		If matches_end.Count > 0 Then
+			block_end = matches_end.Item(0)
 		Else
 			Call setError("setBlock", "Prefixo 'END' não encontrado no bloco '"&block&"'")
 		End If
 		
-		'FINALLY
-		with p_regex
+
+		'FINALLY Block
+		With p_regex
 			.Global = False
 			.IgnoreCase = False
 			.Pattern = "\<!--\s+(FINALLY\s+("&block&"))\s+\-->"
-		End with		
-		Set matches = p_regex.Execute(str)
-		If matches.Count > 0 Then
-			block_finally = matches.Item(0)
+		End With
+
+		Dim matches_finally : Set matches_finally = p_regex.Execute(str)
+		Dim block_finally
+		If matches_finally.Count > 0 Then
+			block_finally = matches_finally.Item(0)
 		Else
 			block_finally = ""
 		End If
 		
-		v_begin       = InStr(str, block_begin) + Len(block_begin)
-		v_end         = InStr(str, block_end) - v_begin
+
+		' Verifica onde inicia e termina cada block
+		Dim v_begin : v_begin = InStr(str, block_begin) + Len(block_begin)
+		Dim v_end   : v_end   = InStr(str, block_end)   - v_begin
 		
-		block_content = Mid(str, v_begin, v_end)
+		Dim block_content : block_content = Mid(str, v_begin, v_end)
 		
 		Call setValue(block, block_content)
 		
+		Dim v_finally
 		If block_finally = "" Then
 			v_finally = 0
 		Else
 			v_finally = InStr(str, block_finally)
 		End If
 		
+		Dim block_replace
 		If v_finally > 0 Then
 			v_end     = InStr(str, block_end) + Len(block_end)
 			v_finally = v_finally - v_end
-			
-			block_content_finally = Mid(str, v_end, v_finally)
-			block_replace         = Replace(str, Mid(str, InStr(str, block_begin), ((InStr(str, block_finally)+Len(block_finally))-InStr(str, block_begin))), "{"&name&"}" )
-			
-			p_finally.Add block, block_content_finally
+		
+			p_finally.Add block, Mid(str, v_end, v_finally)
+
+			block_replace = Replace(str, Mid(str, InStr(str, block_begin), ((InStr(str, block_finally)+Len(block_finally))-InStr(str, block_begin))), "{"&name&"}" )
 		Else
-			block_content_finally = ""
-			block_replace         = Replace(str, Mid(str, InStr(str, block_begin), ((InStr(str, block_end)+Len(block_end))-InStr(str, block_begin))), "{"&name&"}" )
+			block_replace = Replace(str, Mid(str, InStr(str, block_begin), ((InStr(str, block_end)+Len(block_end))-InStr(str, block_begin))), "{"&name&"}" )
 		End If
-	    
+
 		Call setValue(parent, block_replace)
 	End Function
 	
@@ -444,17 +457,21 @@ Class Template
 	
 	' substituir modificadores de conteúdo
 	Public Function substModifiers(value, exp)
-		Dim i, statements, temp, function_name, function_value, function_param, subst_value
-		
-		statements = Split(exp, "|")
-		function_value = Chr(34) & value & Chr(34)
-		
+		Dim statements : statements = Split(exp, "|")
+
+		Dim function_value : function_value = Chr(34) & value & Chr(34)
+
+		Dim i
 		For i = 1 to Ubound(statements)
-			temp = Split(statements(i), ":")
-			function_name = temp(0)
+			Dim temp : temp = Split(statements(i), ":")
+			
+			Dim function_name : function_name = temp(0)
 			temp(0) = function_value
-			function_param = Join(temp, ",")
-			function_param = Replace(function_param, "'", """")
+
+			Dim function_param
+				function_param = Join(temp, ",")
+				function_param = Replace(function_param, "'", """")
+
 			value = function_name&"("&function_param&")"
 			function_value = value
 		Next
@@ -462,7 +479,7 @@ Class Template
 		On Error Resume Next
 		Err.Clear
 		
-		subst_value = Eval(value)
+		Dim subst_value : subst_value = Eval(value)
 		
 		If Err.Number <> 0 Then
 			Call setError("substModifiers", Err.Source&" - "&Err.Description&" ("&value&")")
@@ -476,13 +493,14 @@ Class Template
 	
 	' retorna em formato camelCase a propriedade. EX: .getIdExemplo
 	Private Function camelCasePropertyObject(property_value)
-		Dim i, arrProperty, property_name
+		Dim arrProperty : arrProperty = Split(property_value, "_")
 		
-		arrProperty = Split(property_value, "_")
+		Dim i
 		For i = 0 to Ubound(arrProperty)
 			arrProperty(i) = Left(arrProperty(i), 1) & lCase(Right( arrProperty(i), Len(arrProperty(i))-1 ))
 		Next
-		property_name = ".get" & Join(arrProperty, "") & "()"
+
+		Dim property_name : property_name = ".get" & Join(arrProperty, "") & "()"
 		
 		camelCasePropertyObject = property_name
 	End Function
@@ -490,42 +508,45 @@ Class Template
 	
 	' Preenche todas as variáveis contidas na variável
 	Private Function subst(value)
-		Dim i, j, k, subst_content, var, arrProperties, arrPropertiesIn, objClass, objPropertyName, pointer, value_attribute
-		
-		subst_content = value
+		Dim subst_content : subst_content = value
 		
 		' Variáveis comuns
 		If p_values.Count > 0 Then
-			For i = 0 to p_values.Count - 1
-				subst_content = Replace(subst_content, p_values.Keys()(i), p_values.Items()(i))
+			Dim iValue
+			For iValue = 0 to p_values.Count - 1
+				subst_content = Replace(subst_content, p_values.Keys()(iValue), p_values.Items()(iValue))
 			Next
 		End If
 		
-		' Modificadores
+		' Variáveis com Modificadores
 		If p_modifiers.Count > 0 Then
-			For i = 0 to p_modifiers.Count - 1				
-				If InStr(subst_content, "{"&p_modifiers.Keys()(i)&"|") > 0 Then
-					If p_values.exists("{"&p_modifiers.Keys()(i)&"}") Then
-						subst_content = Replace(subst_content, "{"&p_modifiers.Items()(i)&"}", substModifiers(p_values.Item("{"&p_modifiers.Keys()(i)&"}"), p_modifiers.Items()(i)) )
+			Dim iModify
+			For iModify = 0 to p_modifiers.Count - 1				
+				If InStr(subst_content, "{"&p_modifiers.Keys()(iModify)&"|") > 0 Then
+					If p_values.exists("{"&p_modifiers.Keys()(iModify)&"}") Then
+						subst_content = Replace(subst_content, "{"&p_modifiers.Items()(iModify)&"}", substModifiers(p_values.Item("{"&p_modifiers.Keys()(iModify)&"}"), p_modifiers.Items()(iModify)) )
 					End If
 				End If
 			Next
 		End If
 		
-		' Objetos
+		' Variáveis como Objeto
 		If p_instances.Count > 0 Then
+			Dim i
 			For i = 0 to p_instances.Count - 1
-				var = p_instances.Keys()(i)
+				Dim var : var = p_instances.Keys()(i)
 				If p_properties.Exists(var) Then
-					arrProperties = Split(p_properties.Item(var), ",")
+					Dim arrProperties : arrProperties = Split(p_properties.Item(var), ",")
+					Dim j
 					For j = 0 to Ubound(arrProperties)
 						If InStr(subst_content, "{"&var&arrProperties(j)&"}") > 0 OR InStr(subst_content, "{"&var&arrProperties(j)&"|") > 0 Then
-							pointer = ""
-							Set objClass = p_instances.Item(var)
-							If NOT IsNull(objClass) Then
-								arrPropertiesIn = Split(arrProperties(j), "->")
+							Dim pointer : pointer = ""
+							Dim objClass : Set objClass = p_instances.Item(var)
+							If Not IsNull(objClass) Then
+								Dim arrPropertiesIn : arrPropertiesIn = Split(arrProperties(j), "->")
+								Dim k
 								For k = 1 to Ubound(arrPropertiesIn)
-									objPropertyName = camelCasePropertyObject(arrPropertiesIn(k))
+									Dim objPropertyName : objPropertyName = camelCasePropertyObject(arrPropertiesIn(k))
 									
 									On Error Resume Next
 									Err.Clear
@@ -545,10 +566,11 @@ Class Template
 										Err.Clear
 									End If
 									On Error Goto 0
-		
 								Next
 							End If
 							
+							Dim value_attribute
+
 							If TypeName( pointer ) = "Integer" OR _
 							   TypeName( pointer ) = "Long" OR _
 							   TypeName( pointer ) = "Single" OR _
@@ -582,20 +604,21 @@ Class Template
 	
 	' exibe um bloco
 	Public Function block(value)
-		Dim i, arr_children, child
-		
-		If NOT p_blocks.Exists(value) Then
+		If Not p_blocks.Exists(value) Then
 			Call setError("block", "Bloco "&value&" não existe")
 		End If
 		
+		Dim arr_children
+
 		' verifica os blocos dentro de outros blocos
 		If p_parents.Exists(value) Then
 			children = p_parents.Item(value)
 			
 			arr_children = Split(children, ",")
 			
+			Dim i
 			For i = 0 to Ubound(arr_children)
-				child = arr_children(i)
+				Dim child : child = arr_children(i)
 				
 				If p_finally.Exists(child) AND NOT p_parsed.Exists(child) Then
 					Call setValue(child&"_value", subst(p_finally.Item(child)))
@@ -606,7 +629,7 @@ Class Template
 		
 		Call setValue(value&"_value", getVar(value&"_value")&subst(getVar(value)))
 		
-		If NOT p_parsed.Exists(value) Then
+		If Not p_parsed.Exists(value) Then
 			p_parsed.Item(value) = value
 		End If
 		
@@ -616,8 +639,7 @@ Class Template
 			
 			arr_children = Split(children, ",")
 			For j = 0 to Ubound(arr_children)
-				child = arr_children(j)
-				Call clear(child&"_value")
+				Call clear(arr_children(j)&"_value")
 			Next
 		End If
 	End Function
@@ -625,19 +647,16 @@ Class Template
 	
 	' retorna o conteúdo final
 	Public Function parse()
-		Dim parent, children, arr_children, child, content_finally, container_html
-	
 		' auto-assistência para blocos "filhos"
 		If p_parents.Count > 0 Then
 			p_parents_qtd = p_parents.Count - 1
 			For i = p_parents_qtd to 0 step -1
-				parent   = p_parents.Keys()(i)
-				children = p_parents.Items()(i)
+				Dim parent : parent = p_parents.Keys()(i)
+				Dim children : children = p_parents.Items()(i)
 				
-				arr_children = Split(children, ",")
+				Dim arr_children : arr_children = Split(children, ",")
 				For j = 0 to Ubound(arr_children)
-					child = arr_children(j)
-					If p_blocks.Exists(parent) AND p_parsed.Exists(child) AND NOT p_parsed.Exists(parent) Then
+					If p_blocks.Exists(parent) AND p_parsed.Exists(arr_children(j)) AND Not p_parsed.Exists(parent) Then
 						Call setValue(parent&"_value", subst(getVar(parent)))
 						p_parsed.Item(parent) = parent
 					End If
@@ -648,15 +667,14 @@ Class Template
 		' exibindo os blocos "finally", caso não tenha sido chamado algum bloco "filho" ou o "pai"
 		If p_finally.Count > 0 Then
 			For i = 0 to p_finally.Count - 1
-				If NOT p_parsed.Exists(p_finally.Keys()(i)) Then
-					content_finally = subst(p_finally.Items()(i))
-					Call setValue(p_finally.Keys()(i)&"_value", content_finally)
+				If Not p_parsed.Exists(p_finally.Keys()(i)) Then
+					Call setValue(p_finally.Keys()(i)&"_value", subst(p_finally.Items()(i)))
 				End If
 			Next
 		End If
 
 		' remove as variáveis vazias
-		container_html = subst(getVar("."))
+		Dim container_html : container_html = subst(getVar("."))
 		with p_regex
 			.Global = True
 			.MultiLine = True
@@ -676,23 +694,22 @@ Class Template
 	
 	' exibe na tela um erro ocorrido pela classe de Template
 	Private Sub setError(method, msg)
-		Response.Write("<pre><b>Template.class.asp - "&method&"()</b>" & vbCrLf & Server.HTMLEncode(msg) &"</pre>")
-		Response.End()
+		Err.Raise 1, method, msg
 	End Sub
 	
 	
 	' destrutor da classe 
 	Private Sub Class_Terminate()
-		Set p_vars       = nothing
-		Set p_values     = nothing
-		Set p_properties = nothing
-		Set p_instances  = nothing
-		Set p_modifiers  = nothing
-		Set p_blocks     = nothing
-		Set p_parents    = nothing
-		Set p_parsed     = nothing
-		Set p_finally    = nothing
-		Set p_regex      = nothing
+		Set p_vars       = Nothing
+		Set p_values     = Nothing
+		Set p_properties = Nothing
+		Set p_instances  = Nothing
+		Set p_modifiers  = Nothing
+		Set p_blocks     = Nothing
+		Set p_parents    = Nothing
+		Set p_parsed     = Nothing
+		Set p_finally    = Nothing
+		Set p_regex      = Nothing
 	End Sub
 	
 End class
